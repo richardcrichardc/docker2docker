@@ -4,13 +4,16 @@ An experimental tool for efficiently transferring images between [Docker](https:
 Example usage:
 
 ```
-> docker2docker -s unix:///var/run/docker.sock -d tcp://trusty:5555 busybox
-Retrieving layer info of busybox from unix:///var/run/docker.sock...
+> /docker2docker -s unix:///var/run/docker.sock -d tcp://trusty:5555 ghost
+Retrieving layer info of ghost from unix:///var/run/docker.sock...
 Transfering layers from unix:///var/run/docker.sock to tcp://trusty:5555...
-1/4 511136ea3c... Already exists
-2/4 df7546f9f0... 0.0MB / ~ 0.0MB
-3/4 ea13149945... 2.5MB / ~ 2.3MB
-4/4 4986bf8c15... 0.0MB / ~ 0.0MB
+1/23 511136ea3c... Already exists
+2/23 35f6dd4dd1... Already exists
+...
+...
+21/23 3b160c2e84... 137.7MB / ~ 131.7MB
+22/23 e487cc401d... 5.3MB / ~ 5.0MB
+23/23 41c7a08f2a... 0.0MB / ~ 0.0MB
 >
 
 ```
@@ -21,7 +24,9 @@ Docker supports the transfer of images between daemons without the use of a regi
 
 This tool implements an efficient transfer like Docker `push` and `pull`, for transfers between Docker daemons. It does so by querying the destination daemon and only transfering layers which are not already present.
 
-Please note:
+##Notes##
 * **This is an experimental tool and currently relies on an [extension](http://link/to/pull/request) to the Docker API which has not and may never be included in Docker.** That said, this tool could be implemented using the current API, however it would only be efficient when run on the same machine as the source daemon. 
+* **Tags are not yet transfered**
 * **Encrypted transfers have not yet been implemented, only use this tool locally or on a network you trust.** I am planning on implementing tunnelling through SSH and may also implement SSH connections to Docker.
+* I am thinking of implementing a hybrid mode which will pull layers from the registry if available, otherwise transfer them from the source daemon.
 * As this is an experimental tool, it is only available as source code. If you are a [Go](http://golang.org/) programmer, you know what you need to do to run it. 
