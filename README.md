@@ -25,7 +25,7 @@ Docker supports the transfer of images between daemons without the use of a regi
 This tool implements an efficient transfer like Docker `push` and `pull`, for transfers between Docker daemons. It does so by querying the destination daemon and only transfering layers which are not already present.
 
 ##Notes##
-* **This is an experimental tool and currently relies on an [extension](http://link/to/pull/request) to the Docker API which has not and may never be included in Docker.** That said, this tool could be implemented using the current API, however it would only be efficient when run on the same machine as the source daemon. 
+* **This is an experimental tool and currently relies on an [extension](https://github.com/docker/docker/pull/11102) to the Docker API which has not and may never be included in Docker.** That said, this tool could be implemented using the current API, however it would only be efficient when run on the same machine as the source daemon. 
 * **Tags are not yet transfered**
 * **Encrypted transfers have not yet been implemented, only use this tool locally or on a network you trust.** I am planning on implementing tunnelling through SSH and may also implement SSH connections to Docker.
 * I am thinking of implementing a hybrid mode which will pull layers from the registry if available, otherwise transfer them from the source daemon.
