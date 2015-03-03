@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -20,9 +19,12 @@ type RemoteClient struct {
 	proto, addr string
 }
 
-func NewRemoteClient(host string) *RemoteClient {
+func NewRemoteClient(host string) (*RemoteClient, error) {
 
 	protoAndAddr := strings.SplitN(host, "://", 2)
+	if len(protoAndAddr) != 2 {
+		return nil, fmt.Errorf("Bad format for host: %s", host)
+	}
 	proto := protoAndAddr[0]
 	addr := protoAndAddr[1]
 
@@ -40,14 +42,12 @@ func NewRemoteClient(host string) *RemoteClient {
 		tr.Proxy = http.ProxyFromEnvironment
 		tr.Dial = (&net.Dialer{Timeout: timeout}).Dial
 	default:
-		// docker uses client certificates with https
-		// no support for this yet
-		log.Fatal("Unsupported protocol: ", proto)
+		return nil, fmt.Errorf("Unsupported protocol: ", proto)
 	}
 
 	return &RemoteClient{transport: &tr,
 		proto: proto,
-		addr:  addr}
+		addr:  addr}, nil
 }
 
 func (c *RemoteClient) Get(path string) (io.ReadCloser, int, error) {

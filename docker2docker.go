@@ -40,8 +40,16 @@ func main() {
 	}
 
 	// Set up src and dst connections
-	srcClient := NewRemoteClient(srcAddr)
-	dstClient := NewRemoteClient(dstAddr)
+	srcClient, err := NewRemoteClient(srcAddr)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	dstClient, err := NewRemoteClient(dstAddr)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	// Loop over and transfer images specified on command line
 	for _, image := range flag.Args() {
