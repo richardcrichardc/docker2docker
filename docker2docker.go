@@ -65,11 +65,21 @@ func main() {
 		fmt.Printf("Transfering layers from %s to %s...\n", srcAddr, dstAddr)
 		ticker := time.Tick(500 * time.Millisecond)
 		for i := 0; i < len(layers); i++ {
-			// transfer layers bottom upto avoid missing image errors from dest
+			// transfer layers bottom up to avoid missing image errors from dest
 			j := len(layers) - 1 - i
 			layer := layers[j]
 
 			shortId := layer.Id[:10]
+
+			// The image export does not include the repository and tag in the archive
+			// if a hash is used to identify the image. So use the image name from the
+			// command line in the export of the top layer.
+			var layerId string
+			if j == 0 {
+				layerId = image
+			} else {
+				layerId = layer.Id
+			}
 
 			exists, err := dstClient.Exists("/images/" + layer.Id + "/json")
 			if err != nil {
@@ -85,7 +95,7 @@ func main() {
 				done := make(chan bool)
 
 				go func() {
-					srcReader, _, err := srcClient.Get("/images/" + layer.Id + "/get?noparents=1")
+					srcReader, _, err := srcClient.Get("/images/" + layerId + "/get?noparents=1")
 					if err != nil {
 						fmt.Fprintln(os.Stderr) // move past current progress line
 						fmt.Fprintln(os.Stderr, err)
