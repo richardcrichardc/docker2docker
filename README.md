@@ -50,7 +50,8 @@ TLS/SSL is not supported.
 ```
 
 ##Notes##
-* **This is an experimental tool and currently relies on an [extension](https://github.com/docker/docker/pull/11104) to the Docker API which has not and may never be included in Docker. You will need to compile Docker with this extension to try this tool** That said, this tool could be implemented using the current API, however it would only be efficient when run on the same machine as the source daemon.
+* This is an experimental tool and currently relies on an [extension](https://github.com/docker/docker/pull/11104) to the Docker API which has not and may never be included in Docker. You will need to compile Docker with this extension to try this tool.
+* This tool could be implemented using the current API, however it would only be efficient when run on the same machine as the source daemon.
 * Only tags of the top image, when specified on the command line are transfered.
 * I need to investigate compression, it is likely layers are not being compressed when transfered to the
 destination.
