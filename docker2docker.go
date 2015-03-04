@@ -27,8 +27,8 @@ Source and destination addresses can be in the following formats:
 
 Unix and tcp are the usual docker transports.
 
-Sshunix tunnels a unix domain socket from a remote host over ssh. It
-requires the socat command to be installed on the remote host.
+Sshunix tunnels to a unix domain socket from a remote host over ssh, it
+requires the 'socat' command to be installed on the remote host.
 
 TLS/SSL is not supported.
 `)
