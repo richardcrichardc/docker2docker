@@ -22,7 +22,7 @@ type RemoteClient struct {
 func NewRemoteClient(host string) (*RemoteClient, error) {
 
 	protoAndAddr := strings.SplitN(host, "://", 2)
-	if len(protoAndAddr) != 2 {
+	if len(protoAndAddr) != 2 || protoAndAddr[1] == "" {
 		return nil, fmt.Errorf("Bad format for host: %s", host)
 	}
 	proto := protoAndAddr[0]
@@ -41,8 +41,24 @@ func NewRemoteClient(host string) (*RemoteClient, error) {
 	case "tcp":
 		tr.Proxy = http.ProxyFromEnvironment
 		tr.Dial = (&net.Dialer{Timeout: timeout}).Dial
+	case "sshunix":
+		// Split addr into sshPart and remote host part
+		var userAndHost, remoteUnixSocket string
+
+		userAndHostAndRemoteUnixSocket := strings.SplitN(addr, ":", 2)
+		if len(userAndHostAndRemoteUnixSocket) != 2 || userAndHostAndRemoteUnixSocket[1] == "" {
+			userAndHost = userAndHostAndRemoteUnixSocket[0]
+			remoteUnixSocket = "/var/run/docker.sock"
+		} else {
+			userAndHost = userAndHostAndRemoteUnixSocket[0]
+			remoteUnixSocket = userAndHostAndRemoteUnixSocket[1]
+		}
+
+		fmt.Printf("ssh %s %s\n", userAndHost, remoteUnixSocket)
+		tr.Dial = (&SSHUnixConn{UserAndHost: userAndHost, Socket: remoteUnixSocket}).Dial
+
 	default:
-		return nil, fmt.Errorf("Unsupported protocol: ", proto)
+		return nil, fmt.Errorf("Unsupported protocol: %s", proto)
 	}
 
 	return &RemoteClient{transport: &tr,
@@ -103,6 +119,7 @@ func (c *RemoteClient) Exists(path string) (bool, error) {
 	} else if err != nil {
 		return false, err
 	} else {
+		//io.Copy(ioutil.Discard, output) // drain output - so connection can be reused
 		output.Close()
 		return true, nil
 	}

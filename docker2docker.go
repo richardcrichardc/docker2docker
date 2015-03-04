@@ -12,16 +12,33 @@ type imageInfo struct {
 	Size       int64
 }
 
+func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [-s address] [-d address] image [...] \n\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, `
+Efficiently copies images between two Docker daemons. Only layers that
+are not already present at the destination are transfered.
+
+Source and destination addresses can be in the following formats:
+	unix:///path/to/unix/socket
+	tcp://host:port
+	sshunix://[user@]host:[/path/to/unix/socket]
+
+Unix and tcp are the usual docker transports.
+
+Sshunix tunnels a unix domain socket from a remote host over ssh. It
+requires the socat command to be installed on the remote host.
+
+TLS/SSL is not supported.
+`)
+	}
+}
+
 func main() {
 	// Parse command line arguments
 
 	var srcAddr, dstAddr string
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [-s address] [-d address] image [...] \n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Source and destination addresses are in the usual format, i.e. unix://socket or tcp://host:port.\n")
-		fmt.Fprintf(os.Stderr, "SSL connections are not supported.\n\n")
-		flag.PrintDefaults()
-	}
 
 	flag.StringVar(&srcAddr, "s", "unix:///var/run/docker.sock", "Source docker daemon")
 	flag.StringVar(&dstAddr, "d", "unix:///var/run/docker.sock", "Destination docker daemon")
@@ -42,12 +59,14 @@ func main() {
 	// Set up src and dst connections
 	srcClient, err := NewRemoteClient(srcAddr)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "%s\n\n", err.Error())
+		flag.Usage()
 		os.Exit(1)
 	}
 	dstClient, err := NewRemoteClient(dstAddr)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "%s\n\n", err.Error())
+		flag.Usage()
 		os.Exit(1)
 	}
 
